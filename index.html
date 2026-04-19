@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SANDESH TALK · Random Video Chat</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0b1120 0%, #111827 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      padding: 12px;
+    }
+
+    .app-container {
+      max-width: 1300px;
+      width: 100%;
+      background: rgba(15, 25, 45, 0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 2rem;
+      padding: 1.2rem;
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* header with brand */
+    .brand {
+      text-align: center;
+      margin-bottom: 1.2rem;
+    }
+    .brand h1 {
+      font-size: 1.9rem;
+      font-weight: 800;
+      background: linear-gradient(120deg, #E0F2FE, #A5F3FC, #7DD3FC);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .brand p {
+      color: #9ca3af;
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
+
+    .video-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 1.2rem;
+    }
+
+    .video-card {
+      flex: 1;
+      min-width: 260px;
+      background: #000000aa;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: transform 0.2s;
+    }
+    .video-card:hover {
+      transform: scale(1.01);
+    }
+
+    .video-label {
+      background: #1e2a3edd;
+      padding: 0.6rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+    .video-label span:first-child {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .local-controls {
+      display: flex;
+      gap: 8px;
+    }
+    .icon-btn {
+      background: #2d3b55cc;
+      border: none;
+      border-radius: 40px;
+      width: 34px;
+      height: 34px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      transition: 0.2s;
+      box-shadow: 0 2px 6px black;
+    }
+    .icon-btn:active {
+      transform: scale(0.92);
+    }
+    .icon-btn.mic-off, .icon-btn.video-off {
+      background: #b91c1ccc;
+    }
+    video {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #0a0f1a;
+      object-fit: cover;
+      display: block;
+    }
+    #localVideo {
+      transform: scaleX(-1);
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 1rem 0 0.8rem;
+    }
+    .primary-btn {
+      background: #0f7b3a;
+      border: none;
+      padding: 0.8rem 1.8rem;
+      border-radius: 3rem;
+      font-weight: 700;
+      font-size: 1rem;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .secondary-btn {
+      background: #4a2f2f;
+      border: none;
+      padding: 0.8rem 1.8rem;
+      border-radius: 3rem;
+      font-weight: 700;
+      font-size: 1rem;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .primary-btn:active, .secondary-btn:active {
+      transform: scale(0.97);
+    }
+    .status {
+      background: #0f1422cc;
+      padding: 0.7rem;
+      border-radius: 2.5rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #cbd5e6;
+      text-align: center;
+      font-family: monospace;
+      backdrop-filter: blur(4px);
+      margin-top: 0.5rem;
+    }
+    .badge {
+      color: #6ee7b7;
+      font-weight: bold;
+    }
+    @media (max-width: 650px) {
+      .app-container {
+        padding: 0.9rem;
+      }
+      .brand h1 {
+        font-size: 1.6rem;
+      }
+      .icon-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+      }
+      .primary-btn, .secondary-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.85rem;
+      }
+      .video-label {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.8rem;
+      }
+    }
+    button:disabled {
+      opacity: 0.6;
+      transform: none;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="brand">
+    <h1>🗣️ SANDESH TALK</h1>
+    <p>random 1-on-1 video · private & simple</p>
+  </div>
+
+  <div class="video-grid">
+    <div class="video-card">
+      <div class="video-label">
+        <span>📹 YOU</span>
+        <div class="local-controls">
+          <button id="toggleMicBtn" class="icon-btn" title="Mute / Unmute Mic">🎤</button>
+          <button id="toggleVideoBtn" class="icon-btn" title="Disable / Enable Camera">📷</button>
+        </div>
+      </div>
+      <video id="localVideo" autoplay playsinline muted></video>
+    </div>
+    <div class="video-card">
+      <div class="video-label">
+        <span>🌍 PARTNER</span>
+      </div>
+      <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <button id="startBtn" class="primary-btn">🎥 START CHAT</button>
+    <button id="resetBtn" class="secondary-btn">🔄 LEAVE & RESET</button>
+  </div>
+  <div class="status" id="statusMsg">
+    💬 Ready | Room: <span class="badge">demoRoom</span> — tap START
+  </div>
+</div>
+
+<!-- Firebase SDK v9 -->
+<script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+    }
+  }
+</script>
+
+<script type="module">
+  import { initializeApp } from "firebase/app";
+  import { 
+    getFirestore, doc, setDoc, getDoc, deleteDoc, 
+    collection, addDoc, onSnapshot, writeBatch, getDocs
+  } from "firebase/firestore";
+
+  // ---------- FIREBASE CONFIG ----------
+  const firebaseConfig = {
+    apiKey: "AIzaSyBykeOwdjj7QSeXTlET73-m87mG-3Zfe7I",
+    authDomain: "aajatarkarik.firebaseapp.com",
+    projectId: "aajatarkarik",
+    storageBucket: "aajatarkarik.firebasestorage.app",
+    messagingSenderId: "1014146878916",
+    appId: "1:1014146878916:web:5753761c70dac88ea56891",
+    measurementId: "G-3PMF9EEGGC"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  
+  // ---------- CONSTANTS ----------
+  const ROOM_ID = "demoRoom";
+  const roomRef = doc(db, "rooms", ROOM_ID);
+  const callerCandidatesRef = collection(db, "rooms", ROOM_ID, "callerCandidates");
+  const calleeCandidatesRef = collection(db, "rooms", ROOM_ID, "calleeCandidates");
+
+  let localStream = null;
+  let peerConnection = null;
+  let currentRole = null;        // 'caller' or 'callee'
+  let activeListeners = [];
+  let remoteCandidatesBuffer = [];
+  let remoteDescSet = false;
+  let isStarting = false;
+  
+  // UI Elements
+  const localVideo = document.getElementById("localVideo");
+  const remoteVideo = document.getElementById("remoteVideo");
+  const startBtn = document.getElementById("startBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const statusDiv = document.getElementById("statusMsg");
+  const toggleMicBtn = document.getElementById("toggleMicBtn");
+  const toggleVideoBtn = document.getElementById("toggleVideoBtn");
+  
+  // mute states
+  let micEnabled = true;
+  let videoEnabled = true;
+
+  // helper status
+  function setStatus(text, isError = false) {
+    statusDiv.innerHTML = `📡 ${text}`;
+    if (isError) statusDiv.style.background = "#3b1e1ecc";
+    else statusDiv.style.background = "#0f1422cc";
+    console.log(`[SANDESH TALK] ${text}`);
+  }
+
+  // ---------- MUTE CONTROLS ----------
+  function updateMicButtonUI() {
+    if (micEnabled) {
+      toggleMicBtn.innerHTML = "🎤";
+      toggleMicBtn.classList.remove("mic-off");
+      toggleMicBtn.title = "Mute microphone";
+    } else {
+      toggleMicBtn.innerHTML = "🔇";
+      toggleMicBtn.classList.add("mic-off");
+      toggleMicBtn.title = "Unmute microphone";
+    }
+  }
+  
+  function updateVideoButtonUI() {
+    if (videoEnabled) {
+      toggleVideoBtn.innerHTML = "📷";
+      toggleVideoBtn.classList.remove("video-off");
+      toggleVideoBtn.title = "Turn off camera";
+    } else {
+      toggleVideoBtn.innerHTML = "📷❌";
+      toggleVideoBtn.classList.add("video-off");
+      toggleVideoBtn.title = "Turn on camera";
+    }
+  }
+  
+  function toggleMicrophone() {
+    if (!localStream) {
+      setStatus("No active stream. Start chat first.", true);
+      return;
+    }
+    const audioTracks = localStream.getAudioTracks();
+    if (audioTracks.length === 0) return;
+    micEnabled = !micEnabled;
+    audioTracks.forEach(track => track.enabled = micEnabled);
+    updateMicButtonUI();
+    console.log(`Microphone ${micEnabled ? "unmuted" : "muted"}`);
+  }
+  
+  function toggleCamera() {
+    if (!localStream) {
+      setStatus("No active stream. Start chat first.", true);
+      return;
+    }
+    const videoTracks = localStream.getVideoTracks();
+    if (videoTracks.length === 0) return;
+    videoEnabled = !videoEnabled;
+    videoTracks.forEach(track => track.enabled = videoEnabled);
+    updateVideoButtonUI();
+    console.log(`Camera ${videoEnabled ? "enabled" : "disabled"}`);
+  }
+  
+  toggleMicBtn.addEventListener("click", toggleMicrophone);
+  toggleVideoBtn.addEventListener("click", toggleCamera);
+
+  // ---------- FIRESTORE CLEANUP ----------
+  async function resetRoomSignaling() {
+    try {
+      console.log("🧹 Cleaning Firestore signaling...");
+      const callerSnap = await getDocs(callerCandidatesRef);
+      const calleeSnap = await getDocs(calleeCandidatesRef);
+      const batch = writeBatch(db);
+      callerSnap.forEach(docSnap => batch.delete(docSnap.ref));
+      calleeSnap.forEach(docSnap => batch.delete(docSnap.ref));
+      await batch.commit();
+      await setDoc(roomRef, { offer: null, answer: null }, { merge: true });
+      console.log("✅ Signaling cleared");
+    } catch (err) {
+      console.warn("Cleanup partial:", err);
+    }
+  }
+
+  function unlistenAll() {
+    activeListeners.forEach(unsub => { try { unsub(); } catch(e) {} });
+    activeListeners = [];
+  }
+
+  async function closeConnection() {
+    if (peerConnection) {
+      peerConnection.onicecandidate = null;
+      peerConnection.ontrack = null;
+      peerConnection.onconnectionstatechange = null;
+      peerConnection.close();
+      peerConnection = null;
+    }
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+      localStream = null;
+    }
+    remoteVideo.srcObject = null;
+    remoteDescSet = false;
+    remoteCandidatesBuffer = [];
+    currentRole = null;
+  }
+
+  async function fullResetAndLeave() {
+    if (isStarting) return;
+    setStatus("Leaving session & cleaning...");
+    unlistenAll();
+    await closeConnection();
+    await resetRoomSignaling();
+    currentRole = null;
+    isStarting = false;
+    startBtn.disabled = false;
+    // reset mute button visuals but keep toggles disabled until new stream
+    micEnabled = true; videoEnabled = true;
+    updateMicButtonUI();
+    updateVideoButtonUI();
+    setStatus("✅ Disconnected. Press START for a new partner.");
+  }
+
+  // ---------- ICE & PEER HELPERS ----------
+  function addRemoteIceCandidate(candidateObj) {
+    if (!peerConnection) return;
+    const candidate = new RTCIceCandidate(candidateObj);
+    if (remoteDescSet) {
+      peerConnection.addIceCandidate(candidate).catch(e => console.warn("ICE error", e));
+    } else {
+      remoteCandidatesBuffer.push(candidate);
+    }
+  }
+  
+  function flushRemoteCandidates() {
+    if (remoteDescSet && peerConnection && remoteCandidatesBuffer.length) {
+      console.log(`🚀 Flushing ${remoteCandidatesBuffer.length} ICE`);
+      remoteCandidatesBuffer.forEach(c => peerConnection.addIceCandidate(c).catch(e=>console.warn(e)));
+      remoteCandidatesBuffer = [];
+    }
+  }
+
+  function createPeerConnection() {
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+    });
+    if (localStream) {
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    }
+    pc.onicecandidate = async (event) => {
+      if (event.candidate) {
+        try {
+          if (currentRole === 'caller') await addDoc(callerCandidatesRef, event.candidate.toJSON());
+          else if (currentRole === 'callee') await addDoc(calleeCandidatesRef, event.candidate.toJSON());
+        } catch (err) { console.error("ICE send error", err); }
+      }
+    };
+    pc.ontrack = (event) => {
+      console.log("📺 Remote stream received");
+      if (remoteVideo.srcObject !== event.streams[0]) remoteVideo.srcObject = event.streams[0];
+    };
+    pc.onconnectionstatechange = () => {
+      console.log(`Connection state: ${pc.connectionState}`);
+      if (pc.connectionState === 'connected') setStatus("🎉 Connected! Video chat active.");
+      else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+        setStatus("⚠️ Partner disconnected. Press LEAVE & START again.", true);
+        fullResetAndLeave().catch(console.warn);
+      }
+    };
+    pc.oniceconnectionstatechange = () => console.log(`ICE state: ${pc.iceConnectionState}`);
+    return pc;
+  }
+
+  // ---------- CALLER ----------
+  async function becomeCaller() {
+    console.log("📞 Acting as CALLER");
+    currentRole = 'caller';
+    peerConnection = createPeerConnection();
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    await setDoc(roomRef, { offer: { type: offer.type, sdp: offer.sdp }, answer: null }, { merge: true });
+    
+    // listen for answer
+    const unsubscribeAnswer = onSnapshot(roomRef, (snap) => {
+      const data = snap.data();
+      if (data?.answer && peerConnection && peerConnection.signalingState === 'have-local-offer') {
+        const ans = new RTCSessionDescription({ type: data.answer.type, sdp: data.answer.sdp });
+        peerConnection.setRemoteDescription(ans).then(() => {
+          remoteDescSet = true;
+          flushRemoteCandidates();
+        }).catch(console.error);
+      }
+    });
+    activeListeners.push(unsubscribeAnswer);
+    
+    // listen for callee candidates
+    const unsubscribeCallee = onSnapshot(calleeCandidatesRef, (snap) => {
+      snap.docChanges().forEach(change => {
+        if (change.type === 'added') addRemoteIceCandidate(change.doc.data());
+      });
+    });
+    activeListeners.push(unsubscribeCallee);
+  }
+  
+  // ---------- CALLEE ----------
+  async function becomeCallee(existingOffer) {
+    console.log("🎧 Acting as CALLEE");
+    currentRole = 'callee';
+    peerConnection = createPeerConnection();
+    const offerDesc = new RTCSessionDescription({ type: existingOffer.type, sdp: existingOffer.sdp });
+    await peerConnection.setRemoteDescription(offerDesc);
+    remoteDescSet = true;
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+    await setDoc(roomRef, { answer: { type: answer.type, sdp: answer.sdp } }, { merge: true });
+    flushRemoteCandidates();
+    
+    const unsubscribeCaller = onSnapshot(callerCandidatesRef, (snap) => {
+      snap.docChanges().forEach(change => {
+        if (change.type === 'added') addRemoteIceCandidate(change.doc.data());
+      });
+    });
+    activeListeners.push(unsubscribeCaller);
+  }
+  
+  // ---------- JOIN LOGIC ----------
+  async function joinOrCreateSession() {
+    const roomSnap = await getDoc(roomRef);
+    const roomData = roomSnap.exists() ? roomSnap.data() : null;
+    const offerExists = roomData?.offer !== null && roomData?.offer !== undefined;
+    const answerExists = roomData?.answer !== null && roomData?.answer !== undefined;
+    
+    if (offerExists && answerExists) {
+      setStatus("❌ Room full (2 users). Click LEAVE & RESET to start fresh.", true);
+      return false;
+    }
+    if (!offerExists) {
+      await becomeCaller();
+      setStatus("📞 Waiting for a partner... (you are caller)");
+      return true;
+    }
+    if (offerExists && !answerExists) {
+      await becomeCallee(roomData.offer);
+      setStatus("🎥 Connecting to partner...");
+      return true;
+    }
+    return false;
+  }
+  
+  // ---------- MAIN START ----------
+  async function startVideoChat() {
+    if (isStarting) {
+      setStatus("Already starting, please wait...");
+      return;
+    }
+    isStarting = true;
+    startBtn.disabled = true;
+    
+    await fullResetAndLeave();
+    
+    try {
+      setStatus("🎤 Requesting camera & mic...");
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localStream = stream;
+      localVideo.srcObject = stream;
+      // reset mute UI with actual stream
+      micEnabled = true;
+      videoEnabled = true;
+      updateMicButtonUI();
+      updateVideoButtonUI();
+      console.log("✅ Local stream ready");
+      
+      const success = await joinOrCreateSession();
+      if (!success) {
+        await closeConnection();
+        startBtn.disabled = false;
+        isStarting = false;
+        setStatus("Failed to join room. Use RESET & try again.", true);
+      } else {
+        setStatus("Connected. Waiting for peer video...");
+      }
+    } catch (err) {
+      console.error(err);
+      let msg = "Camera/Mic access error. Please allow permissions.";
+      if (err.name === 'NotAllowedError') msg = "Permission denied. Allow camera & mic.";
+      else if (err.name === 'NotFoundError') msg = "No camera/mic found.";
+      setStatus(`⚠️ ${msg}`, true);
+      await closeConnection();
+      startBtn.disabled = false;
+      isStarting = false;
+      await resetRoomSignaling();
+    }
+  }
+  
+  // ---------- EVENT HANDLERS ----------
+  startBtn.addEventListener("click", startVideoChat);
+  resetBtn.addEventListener("click", async () => {
+    if (isStarting) {
+      setStatus("Please wait, finishing operation...");
+      return;
+    }
+    await fullResetAndLeave();
+    setStatus("✅ Session reset. You can now START a new chat.");
+    startBtn.disabled = false;
+  });
+  
+  window.addEventListener("beforeunload", () => {
+    if (peerConnection || localStream) {
+      resetRoomSignaling().catch(()=>{});
+      if (localStream) localStream.getTracks().forEach(t => t.stop());
+      if (peerConnection) peerConnection.close();
+    }
+  });
+  
+  setStatus("✨ SANDESH TALK ready. Tap START for random 1-on-1 video.");
+</script>
+</body>
+</html>
